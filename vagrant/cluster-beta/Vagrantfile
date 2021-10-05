@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
       # Set VM name in Virtualbox                                                                                                                                                                                
       bastion.vm.provider "virtualbox" do |v|                                                                                                                                                                    
         v.name = "bastion"                                                                                                                                                                                       
-        v.memory = 512                                                                                                                                                                                           
+        v.memory = 256                                                                                                                                                                                           
         v.gui = false                                                                                                                                                                                            
         v.check_guest_additions = false                                                                                                                                                                          
       end                                                                                                                                                                                                        
@@ -41,7 +41,7 @@ Vagrant.configure(2) do |config|
       # Set VM name in Virtualbox
       node1.vm.provider "virtualbox" do |v|
         v.name = "node1"
-        v.memory = 1500
+        v.memory = 1030
         v.gui = false
         v.check_guest_additions = false
         unless File.exist?("grafana.vmdk")
@@ -65,7 +65,7 @@ Vagrant.configure(2) do |config|
       # Set VM name in Virtualbox
       node2.vm.provider "virtualbox" do |v|
         v.name = "node2"
-        v.memory = 1500
+        v.memory = 1030
         v.gui = false
         v.check_guest_additions = false
         unless File.exist?("prometheus.vmdk")
@@ -91,7 +91,7 @@ Vagrant.configure(2) do |config|
       # Set VM name in Virtualbox
       node3.vm.provider "virtualbox" do |v|
         v.name = "node3"
-        v.memory = 1500
+        v.memory = 1030
         v.gui = false
         v.check_guest_additions = false
         unless File.exist?("vault.vmdk")
