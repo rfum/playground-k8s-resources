@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: vault-issuer
+  namespace: sec
+spec:
+  vault:
+    path: pki_int/sign/default
+    server: http://vault-internal:8200
+    auth:
+      tokenSecretRef:
+          name: cert-manager-vault-token
+          key: token
