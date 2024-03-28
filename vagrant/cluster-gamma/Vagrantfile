@@ -1,0 +1,42 @@
+# encoding: utf-8
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANT_BOX = 'k8sbase'
+# # VM Port uncomment this to use NAT instead of DHCP
+# VM_PORT = 8080
+Vagrant.configure(2) do |config|
+    config.vbguest.auto_update = true # Enable or disable automatic update of Guest Additions
+    config.vbguest.no_remote = true # Do not download the ISO from the internet if not found
+    config.vbguest.no_install = false
+
+    config.vm.define "master" do |master|
+      master.vm.box = VAGRANT_BOX
+      master.vm.hostname = "master"
+      # Set VM name in Virtualbox
+      master.vm.provider "virtualbox" do |v|
+        v.name = "master"
+        v.memory = 2100
+        v.gui = false
+        v.check_guest_additions = true
+      end
+      master.vm.network "public_network"
+      master.vm.network "private_network", ip: "192.168.56.3", virtualbox__intnet: true, name: "intnet"
+    end
+
+    config.vm.define "node1" do |node1|
+      node1.vm.box = VAGRANT_BOX
+      node1.vm.hostname = "node1"
+      # Set VM name in Virtualbox
+      node1.vm.provider "virtualbox" do |v|
+        v.name = "node1"
+        v.memory = 2100
+        v.gui = false
+        v.check_guest_additions = true
+      end
+      node1.vm.network "public_network"
+      node1.vm.network "private_network", ip: "192.168.56.4", virtualbox__intnet: true, name: "intnet"
+    end
+
+  end
+
