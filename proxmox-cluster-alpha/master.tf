@@ -33,7 +33,7 @@ resource "proxmox_virtual_environment_vm" "debian_vm_master" {
   }
 
   memory {
-    dedicated = 2512
+    dedicated = 4096
   }
 
   disk {

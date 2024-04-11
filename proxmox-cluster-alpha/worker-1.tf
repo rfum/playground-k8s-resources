@@ -28,12 +28,11 @@ resource "proxmox_virtual_environment_vm" "debian_vm_worker_1" {
   on_boot = true
 
   cpu {
-    cores = 1
-    limit = 3
+    cores = 2
   }
 
   memory {
-    dedicated = 2048
+    dedicated = 8192
   }
 
   disk {
