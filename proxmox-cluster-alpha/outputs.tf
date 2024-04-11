@@ -1,19 +1,8 @@
-output "debian_vm_password_master" {
-  value     = random_password.debian_vm_password_master.result
+output "debian_vm_private_key" {
+  value     = tls_private_key.debian_vm_key.private_key_pem
   sensitive = true
 }
 
-output "debian_vm_password_worker_0" {
-  value     = random_password.debian_vm_password_worker_0.result
-  sensitive = true
-}
-
-output "debian_vm_password_worker_1" {
-  value     = random_password.debian_vm_password_worker_1.result
-  sensitive = true
-}
-
-output "debian_vm_password_worker_2" {
-  value     = random_password.debian_vm_password_worker_2.result
-  sensitive = true
+output "debian_vm_public_key" {
+  value = tls_private_key.debian_vm_key.public_key_openssh
 }

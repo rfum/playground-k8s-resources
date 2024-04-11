@@ -18,7 +18,7 @@ resource "proxmox_virtual_environment_vm" "debian_vm_master" {
     }
 
     user_account {
-      password = random_password.debian_vm_password_master.result
+      keys     = [trimspace(tls_private_key.debian_vm_key.public_key_openssh)]
       username = "debian"
     }
   }
