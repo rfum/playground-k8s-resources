@@ -13,7 +13,7 @@ resource "proxmox_virtual_environment_vm" "debian_vm_master" {
     ip_config {
       ipv4 {
         address = var.master_ip
-        gateway = "192.168.0.1"
+        gateway = var.node_default_gw
       }
     }
 
