@@ -8,6 +8,12 @@ resource "proxmox_virtual_environment_vm" "debian_vm_worker_2" {
   name      = "worker2"
   node_name = var.node_name
 
+  agent {
+    # read 'Qemu guest agent' section, change to true only when ready
+    enabled = false
+  }
+
+
   initialization {
 
     ip_config {
@@ -20,7 +26,9 @@ resource "proxmox_virtual_environment_vm" "debian_vm_worker_2" {
     user_account {
       keys     = [trimspace(tls_private_key.debian_vm_key.public_key_openssh)]
       username = "debian"
+      password = ""
     }
+
   }
 
   keyboard_layout = "tr"
