@@ -30,7 +30,7 @@ resource "proxmox_virtual_environment_vm" "debian_vm_worker_3" {
 
   }
 
-  keyboard_layout = "trq"
+  keyboard_layout = "tr"
 
   on_boot = true
 
