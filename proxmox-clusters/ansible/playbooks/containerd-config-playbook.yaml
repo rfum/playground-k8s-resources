@@ -1,0 +1,47 @@
+---
+- name: Update Containerd Configuration
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure containerd directory exists
+      file:
+        path: /etc/containerd
+        state: directory
+        mode: '0755'
+
+    - name: Update containerd configuration file
+      copy:
+        content: |
+          # path : /etc/containerd/config.toml
+          # disabled_plugins = ["cri"]
+          #root = "/var/lib/containerd"
+          #state = "/run/containerd"
+          #subreaper = true
+          #oom_score = 0
+          #[grpc]
+          #  address = "/run/containerd/containerd.sock"
+          #  uid = 0
+          #  gid = 0
+          #[debug]
+          #  address = "/run/containerd/debug.sock"
+          #  uid = 0
+          #  gid = 0
+          #  level = "info"
+          version = 2
+          [plugins]
+            [plugins."io.containerd.grpc.v1.cri"]
+             [plugins."io.containerd.grpc.v1.cri".containerd]
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+                  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+                    runtime_type = "io.containerd.runc.v2"
+                    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                      SystemdCgroup = true
+        dest: /etc/containerd/config.toml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart containerd service
+      systemd:
+        name: containerd
+        state: restarted
