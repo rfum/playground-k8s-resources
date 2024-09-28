@@ -1,0 +1,30 @@
+---
+- name: Install Longhorn
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Install Longhorn using Helm
+      helm:
+        name: longhorn
+        chart: longhorn/longhorn
+        namespace: longhorn
+        create_namespace: yes
+        values:
+          - defaultSettings.replicaCount=3
+          - defaultSettings.storageOverProvisioningPercentage=200
+          - defaultSettings.storageMinimalAvailablePercentage=10
+      register: helm_install_result
+
+    - name: Wait for Longhorn components to be ready
+      kubernetes.core.k8s_info:
+        kubeconfig: ~/.kube/config
+        kind: Pod
+        namespace: longhorn
+      register: longhorn_pods
+      until: longhorn_pods.resources | selectattr('status.phase', 'equal', 'Running') | list | length >= 6  # Adjust this count based on your components
+      retries: 10
+      delay: 10
+
+    - name: Display Longhorn installation result
+      debug:
+        var: helm_install_result

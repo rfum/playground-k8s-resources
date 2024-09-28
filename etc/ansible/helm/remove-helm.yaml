@@ -1,0 +1,24 @@
+---
+- name: Uninstall Helm from Debian-based systems
+  hosts: localhost
+  become: yes
+  tasks:
+
+    - name: Remove Helm package
+      apt:
+        name: helm
+        state: absent
+
+    - name: Remove Helm GPG key
+      file:
+        path: /usr/share/keyrings/helm.gpg
+        state: absent
+
+    - name: Remove Helm repository
+      file:
+        path: /etc/apt/sources.list.d/helm-stable-debian.list
+        state: absent
+
+    - name: Update apt cache after removal
+      apt:
+        update_cache: yes

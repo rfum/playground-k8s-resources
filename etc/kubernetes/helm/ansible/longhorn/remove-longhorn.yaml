@@ -1,0 +1,23 @@
+---
+- name: Uninstall Longhorn
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Uninstall Longhorn using Helm
+      helm:
+        name: longhorn
+        state: absent
+        namespace: longhorn-system
+      register: helm_uninstall_result
+
+    - name: Clean up Longhorn namespace
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: Namespace
+        name: longhorn-system
+      when: helm_uninstall_result.changed
+
+    - name: Display Longhorn uninstallation result
+      debug:
+        var: helm_uninstall_result
