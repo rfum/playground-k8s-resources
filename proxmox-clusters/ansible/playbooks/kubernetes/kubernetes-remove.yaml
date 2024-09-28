@@ -1,0 +1,32 @@
+---
+- name: Remove Kubernetes Components
+  hosts: all
+  become: yes
+  tasks:
+    - name: Remove Kubernetes packages
+      apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: absent
+        purge: yes
+
+    - name: Remove Kubernetes GPG key
+      file:
+        path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        state: absent
+
+    - name: Remove Kubernetes repository
+      file:
+        path: /etc/apt/sources.list.d/kubernetes.list
+        state: absent
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Remove Kubernetes data directory
+      file:
+        path: /var/lib/kubelet
+        state: absent

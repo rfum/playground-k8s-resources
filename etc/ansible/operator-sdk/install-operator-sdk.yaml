@@ -1,0 +1,41 @@
+---
+- name: Install Operator SDK
+  hosts: localhost
+  become: true
+  tasks:
+
+    - name: Ensure required packages are installed
+      package:
+        name:
+          - curl
+          - git
+          - wget
+          - unzip
+        state: present
+
+    - name: Get the latest Operator SDK version (optional step for dynamic installation)
+      shell: |
+        curl -s https://api.github.com/repos/operator-framework/operator-sdk/releases/latest \
+        | grep tag_name | cut -d '"' -f 4
+      register: sdk_version
+      changed_when: false
+
+    - name: Set the SDK version (use a static version or dynamic from previous step)
+      set_fact:
+        sdk_version: "v1.37.0"
+
+    - name: Download Operator SDK binary
+      get_url:
+        url: "https://github.com/operator-framework/operator-sdk/releases/download/{{ sdk_version }}/operator-sdk_linux_amd64"
+        dest: "/usr/local/bin/operator-sdk"
+        mode: '0755'
+
+    - name: Verify Operator SDK installation
+      command: operator-sdk version
+      register: sdk_installation
+      changed_when: false
+
+    - name: Display Operator SDK version
+      debug:
+        msg: "{{ sdk_installation.stdout }}"
+

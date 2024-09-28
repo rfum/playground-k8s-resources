@@ -1,0 +1,26 @@
+---
+- name: Uninstall Operator SDK
+  hosts: localhost
+  become: true
+  tasks:
+
+    - name: Check if Operator SDK is installed
+      stat:
+        path: /usr/local/bin/operator-sdk
+      register: sdk_installed
+
+    - name: Remove Operator SDK binary
+      file:
+        path: /usr/local/bin/operator-sdk
+        state: absent
+      when: sdk_installed.stat.exists
+
+    - name: Display message if Operator SDK was not installed
+      debug:
+        msg: "Operator SDK is not installed on this machine."
+      when: not sdk_installed.stat.exists
+
+    - name: Clean up any leftover files or configurations (optional)
+      file:
+        path: /usr/local/bin/operator-sdk
+        state: absent
