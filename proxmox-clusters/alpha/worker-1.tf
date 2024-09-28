@@ -39,7 +39,7 @@ resource "proxmox_virtual_environment_vm" "debian_vm_worker_1" {
   }
 
   memory {
-    dedicated = 8192
+    dedicated = 12288
   }
 
   disk {
@@ -48,15 +48,7 @@ resource "proxmox_virtual_environment_vm" "debian_vm_worker_1" {
     interface    = "virtio0"
     iothread     = true
     discard      = "on"
-    size         = 20
-  }
-  disk {
-    datastore_id = "local-lvm"
-    interface    = "virtio0"
-    file_format  = "raw"
-    iothread     = true
-    discard      = "on"
-    size         = 20
+    size         = 150
   }
 
   network_device {

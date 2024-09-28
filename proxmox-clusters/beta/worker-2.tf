@@ -13,7 +13,6 @@ resource "proxmox_virtual_environment_vm" "debian_vm_worker_2" {
     enabled = false
   }
 
-
   initialization {
 
     ip_config {
@@ -26,7 +25,7 @@ resource "proxmox_virtual_environment_vm" "debian_vm_worker_2" {
     user_account {
       keys     = [trimspace(tls_private_key.debian_vm_key.public_key_openssh)]
       username = "debian"
-      password = ""
+      password = "changeme"
     }
 
   }
@@ -49,15 +48,7 @@ resource "proxmox_virtual_environment_vm" "debian_vm_worker_2" {
     interface    = "virtio0"
     iothread     = true
     discard      = "on"
-    size         = 20
-  }
-  disk {
-    datastore_id = "local-lvm"
-    interface    = "virtio0"
-    file_format  = "raw"
-    iothread     = true
-    discard      = "on"
-    size         = 20
+    size         = 350
   }
 
   network_device {

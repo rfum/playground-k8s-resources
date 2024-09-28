@@ -49,15 +49,7 @@ resource "proxmox_virtual_environment_vm" "debian_vm_master" {
     interface    = "virtio0"
     iothread     = true
     discard      = "on"
-    size         = 20
-  }
-  disk {
-    datastore_id = "local-lvm"
-    interface    = "virtio0"
-    file_format  = "raw"
-    iothread     = true
-    discard      = "on"
-    size         = 20
+    size         = 50
   }
 
   network_device {
