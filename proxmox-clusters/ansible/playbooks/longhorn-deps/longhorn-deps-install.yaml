@@ -1,0 +1,70 @@
+---
+- name: Install Longhorn Node Dependencies
+  hosts: kubernetes_nodes
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == 'Debian'
+
+    - name: Install required packages
+      package:
+        name:
+          - open-iscsi
+          - nfs-common
+          - cryptsetup
+          - curl
+          - jq
+        state: present
+
+    - name: Enable and start iscsid service
+      systemd:
+        name: iscsid
+        enabled: yes
+        state: started
+
+    - name: Load iscsi_tcp kernel module
+      modprobe:
+        name: iscsi_tcp
+        state: present
+
+    - name: Ensure iscsi_tcp module loads on boot
+      lineinfile:
+        path: /etc/modules-load.d/iscsi_tcp.conf
+        line: iscsi_tcp
+        create: yes
+
+    - name: Verify cryptsetup installation
+      command: cryptsetup --version
+      register: cryptsetup_version
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Display cryptsetup version
+      debug:
+        var: cryptsetup_version.stdout_lines
+      when: cryptsetup_version.rc == 0
+
+    - name: Check if iSCSI initiator name is configured
+      command: cat /etc/iscsi/initiatorname.iscsi
+      register: iscsi_initiator
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Generate iSCSI initiator name if not configured
+      command: iscsi-iname
+      register: new_iscsi_initiator
+      when: iscsi_initiator.rc != 0
+
+    - name: Set iSCSI initiator name
+      copy:
+        content: "InitiatorName={{ new_iscsi_initiator.stdout }}"
+        dest: /etc/iscsi/initiatorname.iscsi
+      when: iscsi_initiator.rc != 0
+
+    - name: Restart iscsid service
+      systemd:
+        name: iscsid
+        state: restarted
+      when: iscsi_initiator.rc != 0
