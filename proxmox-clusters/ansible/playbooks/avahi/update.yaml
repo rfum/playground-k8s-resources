@@ -1,0 +1,21 @@
+---
+- name: Update Avahi on Linux
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt package list
+      apt:
+        update_cache: yes
+
+    - name: Upgrade Avahi packages to latest version
+      apt:
+        name:
+          - avahi-daemon
+          - avahi-utils
+          - libnss-mdns
+        state: latest
+
+    - name: Restart Avahi service
+      systemd:
+        name: avahi-daemon
+        state: restarted

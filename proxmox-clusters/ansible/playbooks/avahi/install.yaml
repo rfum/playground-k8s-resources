@@ -1,0 +1,30 @@
+---
+- name: Install Avahi on Linux
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt package list
+      apt:
+        update_cache: yes
+
+    - name: Install Avahi and related packages
+      apt:
+        name:
+          - avahi-daemon
+          - avahi-utils
+          - libnss-mdns
+        state: present
+
+    - name: Enable and start Avahi service
+      systemd:
+        name: avahi-daemon
+        enabled: yes
+        state: started
+
+    - name: Check Avahi service status
+      shell: systemctl status avahi-daemon
+      register: result
+      ignore_errors: yes
+
+    - debug:
+        var: result.stdout_lines

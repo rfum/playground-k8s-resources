@@ -1,0 +1,27 @@
+---
+- name: Remove Avahi from Linux
+  hosts: all
+  become: yes
+  tasks:
+    - name: Stop Avahi service
+      systemd:
+        name: avahi-daemon
+        state: stopped
+
+    - name: Disable Avahi service
+      systemd:
+        name: avahi-daemon
+        enabled: no
+
+    - name: Remove Avahi and related packages
+      apt:
+        name:
+          - avahi-daemon
+          - avahi-utils
+          - libnss-mdns
+        state: absent
+        purge: yes
+
+    - name: Clean up unused packages
+      apt:
+        autoremove: yes
