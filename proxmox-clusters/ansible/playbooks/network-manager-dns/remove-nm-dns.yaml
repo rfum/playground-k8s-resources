@@ -1,0 +1,28 @@
+---
+- name: Revert DNS changes
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Re-enable DNS management in NetworkManager
+      lineinfile:
+        path: /etc/NetworkManager/NetworkManager.conf
+        regexp: '^dns=none'
+        state: absent
+
+
+    - name: Apply default DNS settings for active connection
+      command: nmcli connection show
+      register: nmcli_output
+
+    - name: Reset DNS servers for active connection to automatic
+      shell: |
+        active_connection=$(nmcli -t -f NAME connection show --active | head -n 1)
+        nmcli connection modify "$active_connection" ipv4.dns ""
+        nmcli connection modify "$active_connection" ipv4.ignore-auto-dns no
+      when: nmcli_output is defined
+
+    - name: Stop NetworkManager
+      systemd:
+        name: NetworkManager
+        state: stopped
