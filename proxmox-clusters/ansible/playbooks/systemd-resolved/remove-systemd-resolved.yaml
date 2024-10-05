@@ -1,0 +1,45 @@
+---
+- name: Uninstall or Disable systemd-resolved and Revert DNS Configuration
+  hosts: all
+  become: yes
+  vars:
+    uninstall_systemd_resolved: true  # Set to 'true' to uninstall, 'false' to just disable
+  tasks:
+
+    - name: Remove DNS configuration from systemd-resolved
+      lineinfile:
+        path: /etc/systemd/resolved.conf
+        regexp: '^DNS='
+        state: absent
+
+    - name: Remove fallback DNS configuration
+      lineinfile:
+        path: /etc/systemd/resolved.conf
+        regexp: '^FallbackDNS='
+        state: absent
+
+    - name: Unlink /etc/resolv.conf if it is linked to systemd-resolved
+      file:
+        path: /etc/resolv.conf
+        state: absent
+      when: ansible_facts['ansible_lstat']['resolv.conf']['islnk']
+
+    - name: Recreate /etc/resolv.conf with default values
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          nameserver 1.1.1.1
+          nameserver 8.8.8.8
+
+    - name: Disable systemd-resolved
+      systemd:
+        name: systemd-resolved
+        enabled: no
+        state: stopped
+      when: not uninstall_systemd_resolved
+
+    - name: Uninstall systemd-resolved (optional)
+      apt:
+        name: systemd-resolved
+        state: absent
+      when: uninstall_systemd_resolved

@@ -1,0 +1,43 @@
+---
+- name: Install and Configure systemd-resolved with Custom DNS
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Ensure systemd-resolved is installed and running
+      apt:
+        name: systemd-resolved
+        state: present
+      notify: Restart systemd-resolved
+
+    - name: Enable and start systemd-resolved
+      systemd:
+        name: systemd-resolved
+        enabled: yes
+        state: started
+
+    - name: Configure systemd-resolved with custom DNS servers
+      lineinfile:
+        path: /etc/systemd/resolved.conf
+        regexp: '^#?DNS='
+        line: 'DNS=192.168.0.190'
+        create: yes
+
+    - name: Configure fallback DNS servers
+      lineinfile:
+        path: /etc/systemd/resolved.conf
+        regexp: '^#?FallbackDNS='
+        line: 'FallbackDNS=8.8.4.4 1.0.0.1'
+        create: yes
+
+    - name: Link /etc/resolv.conf to systemd-resolved
+      file:
+        src: /run/systemd/resolve/resolv.conf
+        dest: /etc/resolv.conf
+        state: link
+        force: yes
+
+    - name: Restart systemd-resolved
+      systemd:
+        name: systemd-resolved
+        state: restarted
