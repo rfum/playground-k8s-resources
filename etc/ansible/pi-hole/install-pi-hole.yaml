@@ -1,0 +1,39 @@
+---
+- name: Install Pi-hole using Docker Compose V2
+  hosts: pihole
+  become: true
+  vars:
+    pihole_timezone: "Europe/London"  # Change to your timezone
+    pihole_password: "changeme"   # Change to your desired password
+    pihole_version: "latest"
+
+  tasks:
+    - name: Create directories for Pi-hole
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /opt/pihole/etc-pihole
+        - /opt/pihole/etc-dnsmasq.d
+
+    - name: Create Docker Compose file
+      copy:
+        dest: /opt/pihole/docker-compose.yml
+        content: |
+          services:
+            pihole:
+              image: pihole/pihole:{{ pihole_version }}
+              container_name: pihole
+              environment:
+                - TZ={{ pihole_timezone }}
+                - WEBPASSWORD={{ pihole_password }}
+              volumes:
+                - '/opt/pihole/etc-pihole/:/etc/pihole/'
+                - '/opt/pihole/etc-dnsmasq.d/:/etc/dnsmasq.d/'
+              network_mode: host
+              restart: unless-stopped
+
+    - name: Start Pi-hole container
+      community.docker.docker_compose_v2:
+        project_src: /opt/pihole
