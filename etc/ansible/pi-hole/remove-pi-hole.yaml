@@ -1,0 +1,25 @@
+---
+- name: Remove Pi-hole installation
+  hosts: pihole
+  become: true
+
+  tasks:
+    - name: Stop and remove Pi-hole container
+      community.docker.docker_compose_v2:
+        project_src: /opt/pihole
+        stopped: true
+        removed: true
+
+    - name: Remove Docker Compose file
+      file:
+        path: /opt/pihole/docker-compose.yml
+        state: absent
+
+    - name: Remove Pi-hole directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /opt/pihole/etc-pihole
+        - /opt/pihole/etc-dnsmasq.d
+        - /opt/pihole
