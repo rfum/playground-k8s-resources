@@ -1,0 +1,32 @@
+---
+- name: Uninstall Argo CD from Kubernetes cluster
+  hosts: localhost
+  tasks:
+    - name: Uninstall Argo CD Helm release
+      ansible.builtin.command:
+        cmd: helm uninstall argocd --namespace argocd
+      register: helm_uninstall_result
+      changed_when: "'release: not found' not in helm_uninstall_result.stderr"
+
+    - name: Delete Argo CD namespace
+      ansible.builtin.command:
+        cmd: kubectl delete namespace argocd --ignore-not-found
+      register: namespace_delete_result
+      changed_when: "'Error from server (NotFound)' not in namespace_delete_result.stderr"
+
+    - name: Remove Argo CD Helm repo
+      ansible.builtin.command:
+        cmd: helm repo remove argo
+      ignore_errors: yes
+
+    - name: Confirm Argo CD namespace deletion
+      community.kubernetes.k8s_info:
+        api_version: v1
+        kind: Namespace
+        name: argocd
+      register: argocd_namespace
+      failed_when: argocd_namespace.resources | length > 0
+
+    - name: Output uninstallation status
+      ansible.builtin.debug:
+        msg: "Argo CD uninstallation completed successfully."
