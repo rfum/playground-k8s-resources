@@ -1,0 +1,47 @@
+---
+- name: Install Argo CD in Kubernetes cluster
+  hosts: localhost
+  tasks:
+    - name: Add the Argo CD Helm repo
+      ansible.builtin.command:
+        cmd: helm repo add argo https://argoproj.github.io/argo-helm
+      register: add_repo_result
+      changed_when: "'\"\"' not in add_repo_result.stdout"  # Helm will return an empty string if repo already exists
+
+    - name: Update Helm repos
+      ansible.builtin.command:
+        cmd: helm repo update
+      changed_when: False
+
+    - name: Install Argo CD using Helm
+      ansible.builtin.command:
+        cmd: helm upgrade --install argocd argo/argo-cd --namespace argocd --create-namespace
+      register: helm_install_result
+      changed_when: "'release \"argocd\" already exists' not in helm_install_result.stderr"
+
+    - name: Wait for Argo CD pods to be ready
+      community.kubernetes.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: argocd
+        label_selectors:
+          - app.kubernetes.io/name=argocd-server
+      register: argocd_pods
+
+    - name: Check if Argo CD server pod is running
+      ansible.builtin.wait_for:
+        host: "{{ item.status.podIP }}"
+        port: 80
+        state: started
+        timeout: 300
+      loop: "{{ argocd_pods.resources }}"
+      when: item.status.phase == 'Running'
+
+    - name: Display Argo CD initial admin password
+      ansible.builtin.shell: kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+      register: admin_password
+      changed_when: False
+
+    - name: Display initial admin password for Argo CD
+      ansible.builtin.debug:
+        msg: "Argo CD admin password: {{ admin_password.stdout }}"
