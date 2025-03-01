@@ -1,19 +1,3 @@
-/*
-Copyright 2025.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package controller
 
 import (
@@ -25,6 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	playgroundv1alpha1 "github.com/rfum/playground-k8s-resources/api/v1alpha1"
+	"github.com/rfum/playground-k8s-resources/pkg"
 )
 
 // PlaygroundReconciler reconciles a Playground object
@@ -49,7 +34,22 @@ type PlaygroundReconciler struct {
 func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	// get the playground cr
+	var playground playgroundv1alpha1.Playground
+	if err := r.Get(ctx, req.NamespacedName, &playground); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// check services to be installed based on playground cr spec
+	if playground.Spec.Longhorn {
+		job := pkg.JobMetadata{Name: "longhorn", Namespace: "longhorn", ContainerName: "longhorn-install", Command: "tbd", Image: "tbd"}
+		pkg.CreateJob(ctx, r.Client, &job)
+	}
+
+	if playground.Spec.Argocd {
+		job := pkg.JobMetadata{Name: "argocd", Namespace: "argocd", ContainerName: "argocd-install", Command: "tbd", Image: "tbd"}
+		pkg.CreateJob(ctx, r.Client, &job)
+	}
 
 	return ctrl.Result{}, nil
 }

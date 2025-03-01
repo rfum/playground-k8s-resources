@@ -28,14 +28,15 @@ type PlaygroundSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of Playground. Edit playground_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Longhorn bool `json:"longhorn,omitempty"`
+	Argocd   bool `json:"argocd,omitempty"`
 }
 
 // PlaygroundStatus defines the observed state of Playground
 type PlaygroundStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	State string `json:"state,omitempty"`
 }
 
 //+kubebuilder:object:root=true
