@@ -14,7 +14,7 @@ This repository includes:
 
 Before you begin, ensure you have the following installed:
 
-- [Vagrant](https://www.vagrantup.com/): For managing development environments.
+- [Vagrant](https://www.vagrantup.com/): For to create a vagrant managed clusters.
 - [VirtualBox](https://www.virtualbox.org/) or another Vagrant provider: As the hypervisor for running VMs.
 - [Proxmox](https://www.proxmox.com/): For managing virtualized environments, if you're using the Proxmox configurations.
 - [kubectl](https://kubernetes.io/docs/tasks/tools/): For interacting with your Kubernetes clusters.
