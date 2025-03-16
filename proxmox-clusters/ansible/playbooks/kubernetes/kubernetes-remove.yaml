@@ -25,7 +25,12 @@
     - name: Update apt cache
       apt:
         update_cache: yes
-
+        
+    - name: Reboot the server
+      reboot:
+        reboot_timeout: 600
+        test_command: whoami
+        
     - name: Remove Kubernetes data directory
       file:
         path: /var/lib/kubelet
