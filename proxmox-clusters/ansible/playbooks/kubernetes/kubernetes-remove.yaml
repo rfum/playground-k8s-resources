@@ -4,13 +4,8 @@
   become: yes
   tasks:
     - name: Remove Kubernetes packages
-      apt:
-        name:
-          - kubelet
-          - kubeadm
-          - kubectl
-        state: absent
-        purge: yes
+      shell: |
+          apt-get purge -y --allow-change-held-packages kubelet kubeadm kubectl
 
     - name: Remove Kubernetes GPG key
       file:
@@ -26,7 +21,23 @@
       apt:
         update_cache: yes
 
-    - name: Remove Kubernetes data directory
+    - name: Reboot the server
+      reboot:
+        reboot_timeout: 600
+        test_command: whoami
+
+    - name: Remove kubelet data directory
       file:
         path: /var/lib/kubelet
         state: absent
+
+    - name: Remove kubeadm manifests directory
+      file:
+        path: /etc/kubernetes
+        state: absent
+
+    - name: Remove etcd directory
+      file:
+        path: /var/lib/etcd
+        state: absent
+
