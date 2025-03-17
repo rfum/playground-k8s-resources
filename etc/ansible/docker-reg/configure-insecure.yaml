@@ -1,0 +1,67 @@
+---
+- name: Configure Kubernetes Nodes for Insecure Docker Registry Access
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure containerd is installed
+      apt:
+        name: containerd
+        state: present
+        update_cache: yes
+
+    - name: Configure containerd to allow insecure registry
+      block:
+        - name: Ensure containerd config file exists
+          file:
+            path: /etc/containerd/config.toml
+            state: touch
+
+        - name: Modify containerd config for insecure registry
+          replace:
+            path: /etc/containerd/config.toml
+            regexp: 'endpoint = \[.*\]'
+            replace: 'endpoint = ["http://changeme:5000"]'
+
+    - name: Restart containerd service
+      systemd:
+        name: containerd
+        state: restarted
+
+    - name: Configure Docker daemon for insecure registry (if applicable)
+      block:
+        - name: Ensure Docker is installed
+          apt:
+            name: docker.io
+            state: present
+
+        - name: Modify Docker daemon.json
+          copy:
+            dest: /etc/docker/daemon.json
+            content: |
+              {
+                "insecure-registries": ["changeme:5000"]
+              }
+            mode: '0644'
+
+        - name: Restart Docker service
+          systemd:
+            name: docker
+            state: restarted
+
+    - name: Verify registry access
+      shell: "curl -X GET http://changeme:5000/v2/_catalog"
+      register: registry_test
+      changed_when: false
+
+    - name: Verify registry access (domain)
+      shell: "curl -X GET http://changeme:5000/v2/_catalog"
+      register: registry_test_domain
+      changed_when: false
+
+    - name: Display registry access result
+      debug:
+        msg: "{{ registry_test.stdout }}"
+
+    - name: Display registry access result(domain)
+      debug:
+        msg: "{{ registry_test_domain.stdout }}"
