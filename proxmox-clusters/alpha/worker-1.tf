@@ -1,10 +1,4 @@
-resource "random_password" "debian_vm_password_worker_1" {
-  length           = 16
-  override_special = "_%@"
-  special          = true
-}
-
-resource "proxmox_virtual_environment_vm" "debian_vm_worker_1" {
+resource "proxmox_virtual_environment_vm" "vm_worker_1" {
   name      = "worker1"
   node_name = var.node_name
 
@@ -23,9 +17,13 @@ resource "proxmox_virtual_environment_vm" "debian_vm_worker_1" {
       }
     }
 
+    dns {
+      servers = [var.dns_address]
+    }
+
     user_account {
       keys     = [trimspace(tls_private_key.debian_vm_key.public_key_openssh)]
-      username = "debian"
+      username = "ubuntu"
       password = "changeme"
     }
   }
@@ -44,7 +42,7 @@ resource "proxmox_virtual_environment_vm" "debian_vm_worker_1" {
 
   disk {
     datastore_id = "local-lvm"
-    file_id      = proxmox_virtual_environment_download_file.debian_cloud_image.id
+    file_id      = proxmox_virtual_environment_download_file.ubuntu_cloud_image.id
     interface    = "virtio0"
     iothread     = true
     discard      = "on"
