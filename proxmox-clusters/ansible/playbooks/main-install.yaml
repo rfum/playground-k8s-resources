@@ -1,0 +1,4 @@
+- import_playbook: docker/docker-install.yaml
+- import_playbook: containerd-config-playbook.yaml
+- import_playbook: kubernetes/kubeadm-install.yaml
+- import_playbook: longhorn-deps/longhorn-deps-install.yaml
