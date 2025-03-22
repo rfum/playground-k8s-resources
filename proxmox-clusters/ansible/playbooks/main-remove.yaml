@@ -1,0 +1,2 @@
+- import_playbook: docker/docker-remove.yaml
+- import_playbook: kubernetes/kubernetes-remove.yaml
