@@ -1,0 +1,32 @@
+- name: Uninstall MetalLB, NGINX Ingress Controller, and Test Resources
+  hosts: localhost
+  become: false
+  tasks:
+    - name: Uninstall MetalLB Helm release
+      command: helm uninstall metallb -n metallb-system
+      ignore_errors: true
+
+    - name: Delete MetalLB namespace
+      kubernetes.core.k8s:
+        name: metallb-system
+        api_version: v1
+        kind: Namespace
+        state: absent
+
+    - name: Uninstall NGINX Ingress Controller
+      command: helm uninstall nginx-ingress -n ingress-nginx
+      ignore_errors: true
+
+    - name: Delete ingress-nginx namespace
+      kubernetes.core.k8s:
+        name: ingress-nginx
+        api_version: v1
+        kind: Namespace
+        state: absent
+
+    - name: Delete test namespace
+      kubernetes.core.k8s:
+        name: test-app
+        api_version: v1
+        kind: Namespace
+        state: absent

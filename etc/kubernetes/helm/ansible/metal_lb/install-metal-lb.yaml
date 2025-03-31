@@ -1,0 +1,112 @@
+- name: Install MetalLB and NGINX Ingress Controller using Helm
+  hosts: localhost
+  become: false
+  tasks:
+    - name: Ensure Helm is installed
+      command: helm version
+      register: helm_check
+      ignore_errors: true
+
+    - name: Install Helm if not present
+      shell: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      when: helm_check.rc != 0
+
+    - name: Add Helm repositories
+      command: "{{ item }}"
+      with_items:
+        - helm repo add metallb https://metallb.github.io/metallb
+        - helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+
+    - name: Update Helm repositories
+      command: helm repo update
+
+    - name: Create MetalLB namespace
+      kubernetes.core.k8s:
+        name: metallb-system
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Deploy MetalLB using Helm
+      command: >
+        helm upgrade --install metallb metallb/metallb
+        --namespace metallb-system
+
+    - name: Create ingress-nginx namespace
+      kubernetes.core.k8s:
+        name: ingress-nginx
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Deploy NGINX Ingress Controller using Helm
+      command: >
+        helm upgrade --install nginx-ingress ingress-nginx/ingress-nginx
+        --namespace ingress-nginx
+
+    - name: Create a test namespace
+      kubernetes.core.k8s:
+        name: test-app
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Deploy a test NGINX pod
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: nginx-test
+            namespace: test-app
+            labels:
+              app: nginx
+          spec:
+            containers:
+              - name: nginx
+                image: nginx:latest
+                ports:
+                  - containerPort: 80
+
+    - name: Create a service for the NGINX pod
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: nginx-service
+            namespace: test-app
+          spec:
+            selector:
+              app: nginx
+            ports:
+              - protocol: TCP
+                port: 80
+                targetPort: 80
+            type: LoadBalancer
+
+    - name: Deploy an Ingress resource
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: nginx-ingress
+            namespace: test-app
+            annotations:
+              nginx.ingress.kubernetes.io/rewrite-target: /
+          spec:
+            rules:
+              - host: nginx.local
+                http:
+                  paths:
+                    - path: /
+                      pathType: Prefix
+                      backend:
+                        service:
+                          name: nginx-service
+                          port:
+                            number: 80
